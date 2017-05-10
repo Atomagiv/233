@@ -12,6 +12,7 @@
 #include "tree.h"
 #include "cool-tree.handcode.h"
 #include "symtab.h"
+#include <map>
 
 // define the class for phylum
 // define simple phylum - Program
@@ -19,7 +20,7 @@ typedef class Program_class *Program;
 
 class Program_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Program(); }
+   tree_node *copy()     { return copy_Program(); }
    virtual Program copy_Program() = 0;
 
 #ifdef Program_EXTRAS
@@ -33,10 +34,11 @@ typedef class Class__class *Class_;
 
 class Class__class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Class_(); }
+   tree_node *copy()     { return copy_Class_(); }
    virtual Class_ copy_Class_() = 0;
    virtual void semant() = 0;
    virtual Symbol get_parent() = 0;
+   virtual Symbol get_name() = 0;
    virtual Symbol get_symbol(Symbol var) = 0;
    virtual Feature get_method(Symbol method_name) = 0;
 #ifdef Class__EXTRAS
@@ -50,7 +52,7 @@ typedef class Feature_class *Feature;
 
 class Feature_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Feature(); }
+   tree_node *copy()     { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
    virtual void semant() = 0;
    virtual Symbol get_name() = 0;
@@ -68,7 +70,7 @@ typedef class Formal_class *Formal;
 
 class Formal_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Formal(); }
+   tree_node *copy()     { return copy_Formal(); }
    virtual Formal copy_Formal() = 0;
    virtual void semant() = 0;
    virtual Symbol get_type_decl() = 0;
@@ -84,7 +86,7 @@ typedef class Expression_class *Expression;
 
 class Expression_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Expression(); }
+   tree_node *copy()     { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
    virtual void semant() = 0;
 #ifdef Expression_EXTRAS
@@ -98,7 +100,7 @@ typedef class Case_class *Case;
 
 class Case_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Case(); }
+   tree_node *copy()     { return copy_Case(); }
    virtual Case copy_Case() = 0;
    virtual void semant() = 0;
    virtual Expression get_expr() = 0;
@@ -167,9 +169,10 @@ protected:
    Symbol parent;
    Features features;
    Symbol filename;
-   
-public:
    SymbolTable<Symbol, Symbol> *object_table;
+   std::map<Symbol, Feature> *method_table;
+public:
+   
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
       name = a1;
       parent = a2;
@@ -177,14 +180,23 @@ public:
       filename = a4;
       object_table = new SymbolTable<Symbol, Symbol>();
       object_table->enterscope();
+      method_table = new std::map<Symbol, Feature>();
    }
    Class_ copy_Class_();
+   int get_environment();
    void dump(ostream& stream, int n);
    void semant();
    Symbol get_name();
    Symbol get_symbol(Symbol var);
    Symbol get_parent();
    Feature get_method(Symbol method);
+   std::map<Symbol, Feature> * get_method_table() {
+     return method_table;
+   }
+   SymbolTable<Symbol, Symbol> *get_object_table()
+   {
+      return object_table;
+   }
 
 
 #ifdef Class__SHARED_EXTRAS
@@ -225,7 +237,7 @@ public:
    {
       return formals->len();
    }
-
+   int get_environment();
    Symbol get_arg_type(int i)
    {
       assert(i < get_len());
@@ -254,6 +266,7 @@ public:
       init = a3;
    }
    Feature copy_Feature();
+   int get_environment();
    Symbol get_arg_type(int i) 
    {
      return NULL;

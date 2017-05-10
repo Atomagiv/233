@@ -38,6 +38,9 @@ public:
   ostream& semant_error();
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
+  void add_class(Class_ class_);
+  bool inheritance_check(Symbol parent, Symbol child);
+  bool is_inherent_cycle_present(Symbol class_);
   Feature ahead_method(Symbol class_name, Symbol method_name);
 };
 
